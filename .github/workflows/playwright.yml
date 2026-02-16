@@ -14,18 +14,24 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+    - name: Cache npm
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     - name: Install dependencies
       run: npm ci
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
       run: PLAYWRIGHT_HTML_REPORT=playwright-report npx playwright test
-    - name: Upload Playwright HTML report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report-new
-        path: playwright-report-new
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
